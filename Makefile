@@ -20,7 +20,7 @@ glide:
 	glide install --force
 
 start-mysql:
-	docker run --name weatherdb \
+	docker run --name smartdevdb \
 		-e MYSQL_ROOT_PASSWORD=blibb \
 		-e MYSQL_DATABASE=weather_db \
 		-e MYSQL_USER=blubb \
