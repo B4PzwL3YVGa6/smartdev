@@ -28,7 +28,7 @@ func NewAdapter() (db Adapter) {
 		log.Println("Could not parse VCAP environment variables")
 		log.Println(err)
 	} else {
-		service, err := vcap.Services.WithName("weatherdb")
+		service, err := vcap.Services.WithName("smartdevdb")
 		if err != nil {
 			log.Println("Could not find weatherdb service in VCAP_SERVICES")
 			log.Fatal(err)
