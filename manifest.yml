@@ -1,0 +1,29 @@
+---
+applications:
+- name: smartdev
+  memory: 64M
+  disk_quota: 128M
+  instances: 2
+  buildpack: go_buildpack
+  hosts:
+  - smartdev
+  # for blue-green deployment
+  - smartdev-blue-green
+  domains:
+  - scapp.io
+  - applicationcloud.io
+  services:
+  - smartdevdb
+  - weathersms
+  env:
+    GOPACKAGENAME: github.com/anyandrea/smartdev
+    DEFAULT_CANTON: Bern
+    DEFAULT_CITY: Grächwil
+    WEATHERDB_TYPE: mysql
+    WEATHERAPI_PASSWORD: '$apr1$HgKK9qnB$iisUDv3IBoi94OkIyZekV0'
+    WEATHERSMS_PHONENUM: "0797363176"
+    CONFIG_ROOM_TEMPERATURE_SENSOR_ID: "37"
+    CONFIG_ROOM_HUMIDITY_SENSOR_ID: "40"
+    CONFIG_FORECAST_TEMPERATURE_SENSOR_ID: "31"
+  command: smartdev
+  path: .

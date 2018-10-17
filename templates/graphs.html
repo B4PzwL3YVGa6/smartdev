@@ -1,0 +1,234 @@
+<script src="/js/chart.bundle.min.2.7.1.js"></script>
+<script src="/js/palette.min.js"></script>
+<br/>
+
+<section class="section is-paddingless">
+  <div class="container">
+    <label class="label">48 hours - temperature and humidity</label>
+    <canvas id="hour_chart" width="100%" height="25%"></canvas>
+    <script>
+    var tempColors = palette('cb-OrRd', 5).map(function(hex) { return '#' + hex; });
+    var tempColorIndex = tempColors.length;
+    var tempColor = function() {
+        if (tempColorIndex == 0) {
+            tempColorIndex = tempColors.length;
+        }
+        var color = tempColors[tempColorIndex-1]
+        tempColorIndex--;
+        return color;
+    }
+
+    var humColors = palette('cb-PuBuGn', 5).map(function(hex) { return '#' + hex; });
+    var humColorIndex = humColors.length;
+    var humColor = function() {
+        if (humColorIndex == 0) {
+            humColorIndex = humColors.length;
+        }
+        var color = humColors[humColorIndex-1]
+        humColorIndex--;
+        return color;
+    }
+
+    var data = {
+        labels: [{{ range $index, $element := .Content.HourlyLabels }}{{ if $index }},{{ end }}"{{ $element }}"{{ end }}],
+        datasets: [
+        {{ range $sensor, $data := .Content.HourlyHumidity }}
+            {
+                label: "{{ $sensor.Name }}",
+                yAxisID: 'H',
+                data: [{{ range $index, $element := $data }}{{ if $index }},{{ end }}{{ $element.Value }}{{ end }}],
+                borderColor: "#3572a8"
+            },
+        {{ end }}
+        {{ range $sensor, $data := .Content.HourlyTemperature }}
+            {
+                label: "{{ $sensor.Name }}",
+                yAxisID: 'T',
+                data: [{{ range $index, $element := $data }}{{ if $index }},{{ end }}{{ $element.Value }}{{ end }}],
+                borderColor: {{ if eq $sensor.Id $.Content.Config.Room.TemperatureSensorID }}"#ff4f0a"{{ else }}"#8310bc"{{ end }}
+            },
+        {{ end }}
+        ]
+    };
+
+    var ctx = document.getElementById("hour_chart").getContext('2d');
+    var hour_chart = new Chart.Line(ctx, {
+        data: data,
+        options: {
+            tooltips: {
+                mode: 'index',
+                intersect: false,
+                callbacks: {
+                    label: function (tooltipItem, d) {
+                        if (tooltipItem.datasetIndex >= 0 && tooltipItem.datasetIndex < {{ len .Content.HourlyHumidity }}) {
+                            return tooltipItem.yLabel + '% - ' + data.datasets[tooltipItem.datasetIndex].label
+                        } else {
+                            return tooltipItem.yLabel + '°C - ' + data.datasets[tooltipItem.datasetIndex].label
+                        }
+                    }
+                }
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            },
+            scales: {
+                xAxes: [{
+                    type: "time",
+                    time: {
+                        format: 'DD.MM. - HH:mm',
+                        tooltipFormat: 'll HH:mm'
+                    },
+                    scaleLabel: {
+                        display: true
+                    }
+                }],
+                yAxes: [{
+                    id: 'H',
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Humidity'
+                    },
+                    type: 'linear',
+                    position: 'right',
+                    ticks: {
+                        callback: function(value, index, values) {
+                            return value + '%';
+                        }
+                    }
+                },{
+                    id: 'T',
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Temperature'
+                    },
+                    type: 'linear',
+                    position: 'left',
+                    ticks: {
+                        callback: function(value, index, values) {
+                            return value + '°';
+                        }
+                    }
+                }]
+            }
+        }
+    });
+    </script>
+  </div>
+</section>
+
+<section class="section is-paddingless">
+  <div class="container">
+    <label class="label">4 weeks - temperature and humidity</label>
+    <canvas id="week_chart" width="100%" height="25%"></canvas>
+    <script>
+    var tempColors = palette('cb-OrRd', 5).map(function(hex) { return '#' + hex; });
+    var tempColorIndex = tempColors.length;
+    var tempColor = function() {
+        if (tempColorIndex == 0) {
+            tempColorIndex = tempColors.length;
+        }
+        var color = tempColors[tempColorIndex-1]
+        tempColorIndex--;
+        return color;
+    }
+
+    var humColors = palette('cb-PuBuGn', 5).map(function(hex) { return '#' + hex; });
+    var humColorIndex = humColors.length;
+    var humColor = function() {
+        if (humColorIndex == 0) {
+            humColorIndex = humColors.length;
+        }
+        var color = humColors[humColorIndex-1]
+        humColorIndex--;
+        return color;
+    }
+
+    var data = {
+        labels: [{{ range $index, $element := .Content.WeeklyLabels }}{{ if $index }},{{ end }}"{{ $element }}"{{ end }}],
+        datasets: [
+        {{ range $sensor, $data := .Content.WeeklyHumidity }}
+            {
+                label: "{{ $sensor.Name }}",
+                yAxisID: 'H',
+                data: [{{ range $index, $element := $data }}{{ if $index }},{{ end }}{{ $element.Value }}{{ end }}],
+                borderColor: "#3572a8"
+
+            },
+        {{ end }}
+        {{ range $sensor, $data := .Content.WeeklyTemperature }}
+            {
+                label: "{{ $sensor.Name }}",
+                yAxisID: 'T',
+                data: [{{ range $index, $element := $data }}{{ if $index }},{{ end }}{{ $element.Value }}{{ end }}],
+                borderColor: {{ if eq $sensor.Id $.Content.Config.Room.TemperatureSensorID }}"#ff4f0a"{{ else }}"#8310bc"{{ end }}
+            },
+        {{ end }}
+        ]
+    };
+
+    var ctx = document.getElementById("week_chart").getContext('2d');
+    var week_chart = new Chart.Line(ctx, {
+        data: data,
+        options: {
+            tooltips: {
+                mode: 'index',
+                intersect: false,
+                callbacks: {
+                    label: function (tooltipItem, data) {
+                        if (tooltipItem.datasetIndex >= 0 && tooltipItem.datasetIndex < {{ len .Content.HourlyHumidity }}) {
+                            return tooltipItem.yLabel + '% - ' + data.datasets[tooltipItem.datasetIndex].label
+                        } else {
+                            return tooltipItem.yLabel + '°C - ' + data.datasets[tooltipItem.datasetIndex].label
+                        }
+                    }
+                }
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            },
+            scales: {
+                xAxes: [{
+                    type: "time",
+                    time: {
+                        format: 'DD.MM.YYYY',
+                        tooltipFormat: 'll'
+                    },
+                    scaleLabel: {
+                        display: true
+                    }
+                }],
+                yAxes: [{
+                    id: 'H',
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Humidity'
+                    },
+                    type: 'linear',
+                    position: 'right',
+                    ticks: {
+                        callback: function(value, index, values) {
+                            return value + '%';
+                        }
+                    }
+                },{
+                    id: 'T',
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Temperature'
+                    },
+                    type: 'linear',
+                    position: 'left',
+                    ticks: {
+                        callback: function(value, index, values) {
+                            return value + '°';
+                        }
+                    }
+                }]
+            }
+        }
+    });
+    </script>
+  </div>
+</section>
