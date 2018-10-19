@@ -25,7 +25,7 @@ func Account(db weatherdb.WeatherDB, sm *scs.Manager) func(rw http.ResponseWrite
 
 		// TODO: display account page for logged-in user
 		page := &Page{
-			Title:  "Newsfeed - Account",
+			Title:  "Weather app - Account",
 			Active: "account",
 			User:   user.Name,
 		}

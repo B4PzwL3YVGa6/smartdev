@@ -11,7 +11,7 @@ import (
 
 func Unauthorized(rw http.ResponseWriter) {
 	page := &Page{
-		Title: "Newsfeed - Unauthorized",
+		Title: "Weather app - Unauthorized",
 	}
 	web.Render().HTML(rw, http.StatusUnauthorized, "unauthorized", page)
 }
@@ -50,7 +50,7 @@ func Login(db weatherdb.WeatherDB, sm *scs.Manager) func(rw http.ResponseWriter,
 		}
 
 		page := &Page{
-			Title: "Newsfeed - Login",
+			Title: "Weather app - Login",
 		}
 		web.Render().HTML(rw, http.StatusOK, "login", page)
 	}
