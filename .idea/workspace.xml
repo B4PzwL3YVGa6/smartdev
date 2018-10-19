@@ -98,7 +98,7 @@
     <option name="x" value="-1" />
     <option name="y" value="25" />
     <option name="width" value="1922" />
-    <option name="height" value="1071" />
+    <option name="height" value="951" />
   </component>
   <component name="ProjectReloadState">
     <option name="STATE" value="1" />
@@ -322,15 +322,15 @@
       <option name="presentableId" value="Default" />
       <updated>1539778095845</updated>
       <workItem from="1539778103617" duration="58000" />
-      <workItem from="1539778177352" duration="1485000" />
+      <workItem from="1539778177352" duration="1512000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1543000" />
+    <option name="totallyTimeSpent" value="1570000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1" y="25" width="1922" height="1071" extended-state="6" />
+    <frame x="-1" y="25" width="1922" height="951" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
