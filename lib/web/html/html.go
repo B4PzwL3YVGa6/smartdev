@@ -5,13 +5,14 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/alexedwards/scs"
 	"github.com/anyandrea/smartdev/lib/config"
 	"github.com/anyandrea/smartdev/lib/database/weatherdb"
 	"github.com/anyandrea/smartdev/lib/forecasts"
 	"github.com/anyandrea/smartdev/lib/web"
 )
 
-func Index(wdb weatherdb.WeatherDB) func(rw http.ResponseWriter, req *http.Request) {
+func Index(wdb weatherdb.WeatherDB, sm *scs.Manager) func(rw http.ResponseWriter, req *http.Request) {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		page := &Page{
 			Title:  "Weather App",
@@ -28,18 +29,23 @@ func NotFound(rw http.ResponseWriter, req *http.Request) {
 	web.Render().HTML(rw, http.StatusNotFound, "not_found", page)
 }
 
-func ErrorHandler(rw http.ResponseWriter, req *http.Request) {
-	Error(rw, fmt.Errorf("Internal Server Error"))
+func ErrorHandler(sm *scs.Manager) func(rw http.ResponseWriter, req *http.Request) {
+	return func(rw http.ResponseWriter, req *http.Request) {
+		Error(sm, rw, req, fmt.Errorf("Internal Server Error"))
+	}
 }
-func Error(rw http.ResponseWriter, err error) {
+func Error(sm *scs.Manager, rw http.ResponseWriter, req *http.Request, err error) {
+	session := sm.Load(req)
+	userName, _ := session.GetString("user_name")
 	page := &Page{
-		Title:   "Weather App - Error",
+		Title:   "Smartdev - Error",
 		Content: err,
+		User:    userName,
 	}
 	web.Render().HTML(rw, http.StatusInternalServerError, "error", page)
 }
 
-func Graphs(wdb weatherdb.WeatherDB) func(rw http.ResponseWriter, req *http.Request) {
+func Graphs(wdb weatherdb.WeatherDB, sm *scs.Manager) func(rw http.ResponseWriter, req *http.Request) {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		page := &Page{
 			Title:  "Weather App - Graphs",
@@ -48,7 +54,7 @@ func Graphs(wdb weatherdb.WeatherDB) func(rw http.ResponseWriter, req *http.Requ
 
 		sensors, err := wdb.GetSensors()
 		if err != nil {
-			Error(rw, err)
+			Error(sm, rw, req, err)
 			return
 		}
 
@@ -62,7 +68,7 @@ func Graphs(wdb weatherdb.WeatherDB) func(rw http.ResponseWriter, req *http.Requ
 			case "temperature":
 				values, err := wdb.GetHourlyAverages(sensor.Id, 48)
 				if err != nil {
-					Error(rw, err)
+					Error(sm, rw, req, err)
 					return
 				}
 				hourlyTemperature[*sensor] = values
@@ -76,7 +82,7 @@ func Graphs(wdb weatherdb.WeatherDB) func(rw http.ResponseWriter, req *http.Requ
 
 				values, err = wdb.GetDailyAverages(sensor.Id, 28)
 				if err != nil {
-					Error(rw, err)
+					Error(sm, rw, req, err)
 					return
 				}
 				weeklyTemperature[*sensor] = values
@@ -90,14 +96,14 @@ func Graphs(wdb weatherdb.WeatherDB) func(rw http.ResponseWriter, req *http.Requ
 			case "humidity":
 				values, err := wdb.GetHourlyAverages(sensor.Id, 48)
 				if err != nil {
-					Error(rw, err)
+					Error(sm, rw, req, err)
 					return
 				}
 				hourlyHumidity[*sensor] = values
 
 				values, err = wdb.GetDailyAverages(sensor.Id, 48)
 				if err != nil {
-					Error(rw, err)
+					Error(sm, rw, req, err)
 					return
 				}
 				weeklyHumidity[*sensor] = values
@@ -126,16 +132,23 @@ func Graphs(wdb weatherdb.WeatherDB) func(rw http.ResponseWriter, req *http.Requ
 	}
 }
 
-func Sensors(wdb weatherdb.WeatherDB) func(rw http.ResponseWriter, req *http.Request) {
+func Sensors(wdb weatherdb.WeatherDB, sm *scs.Manager) func(rw http.ResponseWriter, req *http.Request) {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		page := &Page{
 			Title:  "Weather App - Sensors",
 			Active: "sensors",
 		}
 
+		session := sm.Load(req)
+		userId, _ := session.GetInt("user_id")
+		if userId == 0 {
+			Unauthorized(rw)
+			return
+		}
+
 		sensors, err := wdb.GetSensors()
 		if err != nil {
-			Error(rw, err)
+			Error(sm, rw, req, err)
 			return
 		}
 
@@ -143,7 +156,7 @@ func Sensors(wdb weatherdb.WeatherDB) func(rw http.ResponseWriter, req *http.Req
 		for _, sensor := range sensors {
 			d, err := wdb.GetSensorData(sensor.Id, 10)
 			if err != nil {
-				Error(rw, err)
+				Error(sm, rw, req, err)
 				return
 			}
 			data[sensor.Id] = d

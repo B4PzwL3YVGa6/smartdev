@@ -44,3 +44,18 @@ type Door struct {
 	Image string `json:"image" xml:"image"`
 	Title string `json:"title" xml:"title"`
 }
+
+type Subscription struct {
+	SensorId      int `json:"sensor_id" xml:"sensor_id,attr"`
+	UserId      int `json:"user_id" xml:"user_id,attr"`
+}
+
+type User struct {
+	Id            int            `json:"id" xml:"id,attr"`
+	Password      string         `json:"password" xml:"password"`
+	Name          string         `json:"name" xml:"name"`
+	Email         string         `json:"email" xml:"email"`
+	Role          string         `json:"role" xml:"role"`
+	Active        bool           `json:"active" xml:"active"`
+	Subscriptions []Subscription `json:"subscriptions" xml:"subscriptions"`
+}

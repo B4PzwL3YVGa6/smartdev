@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"github.com/alexedwards/scs"
 	"github.com/anyandrea/smartdev/lib/config"
 	"github.com/anyandrea/smartdev/lib/database"
 	"github.com/anyandrea/smartdev/lib/database/weatherdb"
@@ -23,13 +24,14 @@ import (
 func main() {
 	env.MustGet("WEATHERAPI_PASSWORD")
 	wdb := setupDatabase()
+	sm := setupSessionManager()
 
 	// setup SIGINT catcher for graceful shutdown
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 
 	// start a http server with negroni
-	server := startHTTPServer(wdb)
+	server := startHTTPServer(wdb, sm)
 
 	// wait for SIGINT
 	<-stop
@@ -105,18 +107,27 @@ func spawnForecastCollection(wdb weatherdb.WeatherDB) {
 	}(wdb)
 }
 
-func setupNegroni(wdb weatherdb.WeatherDB) *negroni.Negroni {
+func setupNegroni(wdb weatherdb.WeatherDB, sm *scs.Manager) *negroni.Negroni {
 	n := negroni.Classic()
 
-	r := router.New(wdb)
+	r := router.New(wdb, sm)
 	n.UseHandler(r)
 
 	return n
 }
 
-func startHTTPServer(wdb weatherdb.WeatherDB) *http.Server {
+func setupSessionManager() *scs.Manager {
+	sm := scs.NewCookieManager("newsfeed-super-secret-cookie-key")
+	sm.Lifetime(2 * time.Hour)
+	sm.Persist(true)
+	//sm.HttpOnly(false)
+	//sm.Secure(true) // needs HTTPS
+	return sm
+}
+
+func startHTTPServer(wdb weatherdb.WeatherDB, sm *scs.Manager) *http.Server {
 	addr := ":" + env.Get("PORT", "8080")
-	server := &http.Server{Addr: addr, Handler: setupNegroni(wdb)}
+	server := &http.Server{Addr: addr, Handler: setupNegroni(wdb, sm)}
 
 	go func() {
 		log.Printf("Listening on http://0.0.0.0%s\n", addr)

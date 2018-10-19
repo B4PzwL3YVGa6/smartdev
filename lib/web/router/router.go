@@ -3,6 +3,8 @@ package router
 import (
 	"net/http"
 
+	"github.com/alexedwards/scs"
+
 	"github.com/anyandrea/smartdev/lib/database/weatherdb"
 	"github.com/anyandrea/smartdev/lib/util"
 	"github.com/anyandrea/smartdev/lib/web/api"
@@ -10,26 +12,30 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func New(wdb weatherdb.WeatherDB) *mux.Router {
+func New(wdb weatherdb.WeatherDB, sm *scs.Manager) *mux.Router {
 	router := mux.NewRouter()
-	setupRoutes(wdb, router)
+	setupRoutes(wdb, sm, router)
 	return router
 }
 
-func setupRoutes(wdb weatherdb.WeatherDB, router *mux.Router) *mux.Router {
+func setupRoutes(wdb weatherdb.WeatherDB, sm *scs.Manager, router *mux.Router) *mux.Router {
 	// HTML
 	router.NotFoundHandler = http.HandlerFunc(html.NotFound)
 
-	router.HandleFunc("/", html.Index(wdb))
-	router.HandleFunc("/error", html.ErrorHandler)
+	router.HandleFunc("/", html.Index(wdb, sm))
+	router.HandleFunc("/error", html.ErrorHandler(sm))
 
-	router.HandleFunc("/dashboard", html.Dashboard(wdb))
-	router.HandleFunc("/graphs", html.Graphs(wdb))
-	router.HandleFunc("/sensor_data", html.Sensors(wdb))
+	router.HandleFunc("/dashboard", html.Dashboard(wdb, sm))
+	router.HandleFunc("/graphs", html.Graphs(wdb, sm))
+	router.HandleFunc("/sensor_data", html.Sensors(wdb, sm))
 
 	router.HandleFunc("/forecasts", html.Forecasts)
 	router.HandleFunc("/forecasts/{canton}", html.Forecasts)
 	router.HandleFunc("/forecasts/{canton}/{city}", html.Forecasts)
+
+	router.HandleFunc("/logout", html.Logout(wdb, sm))
+	router.HandleFunc("/account", html.Account(wdb, sm))
+	router.HandleFunc("/login", html.Login(wdb, sm))
 
 	// API
 	router.HandleFunc("/sensor_type", api.GetSensorTypes(wdb)).Methods("GET")

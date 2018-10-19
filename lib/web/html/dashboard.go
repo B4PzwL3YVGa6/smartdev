@@ -3,12 +3,14 @@ package html
 import (
 	"net/http"
 	"time"
+
+	"github.com/alexedwards/scs"
 	"github.com/anyandrea/smartdev/lib/config"
 	"github.com/anyandrea/smartdev/lib/database/weatherdb"
 	"github.com/anyandrea/smartdev/lib/web"
 )
 
-func Dashboard(wdb weatherdb.WeatherDB) func(rw http.ResponseWriter, req *http.Request) {
+func Dashboard(wdb weatherdb.WeatherDB, sm *scs.Manager) func(rw http.ResponseWriter, req *http.Request) {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		page := &Page{
 			Title:  "Weather App - Dashboard",
@@ -18,12 +20,12 @@ func Dashboard(wdb weatherdb.WeatherDB) func(rw http.ResponseWriter, req *http.R
 		// collect the top column
 		roomTemp, err := wdb.GetSensorData(config.Get().Room.TemperatureSensorID, 1)
 		if err != nil {
-			Error(rw, err)
+			Error(sm, rw, req, err)
 			return
 		}
 		roomHum, err := wdb.GetSensorData(config.Get().Room.HumiditySensorID, 1)
 		if err != nil {
-			Error(rw, err)
+			Error(sm, rw, req, err)
 			return
 		}
 
@@ -35,13 +37,12 @@ func Dashboard(wdb weatherdb.WeatherDB) func(rw http.ResponseWriter, req *http.R
 
 		roomTempSensor, err := wdb.GetSensorById(config.Get().Room.TemperatureSensorID)
 		if err != nil {
-			Error(rw, err)
+			Error(sm, rw, req, err)
 			return
 		}
 		values, err := wdb.GetHourlyAverages(config.Get().Room.TemperatureSensorID, 72)
 		if err != nil {
-			Error(rw, err)
-
+			Error(sm, rw, req, err)
 
 			return
 		}
@@ -49,25 +50,25 @@ func Dashboard(wdb weatherdb.WeatherDB) func(rw http.ResponseWriter, req *http.R
 
 		forecastTempSensor, err := wdb.GetSensorById(config.Get().Forecast.TemperatureSensorID)
 		if err != nil {
-			Error(rw, err)
+			Error(sm, rw, req, err)
 			return
 		}
 
 		values, err = wdb.GetHourlyAverages(config.Get().Forecast.TemperatureSensorID, 72)
 		if err != nil {
-			Error(rw, err)
+			Error(sm, rw, req, err)
 			return
 		}
 		graphTemperature[*forecastTempSensor] = values
 
 		roomHumSensor, err := wdb.GetSensorById(config.Get().Room.HumiditySensorID)
 		if err != nil {
-			Error(rw, err)
+			Error(sm, rw, req, err)
 			return
 		}
 		values, err = wdb.GetHourlyAverages(config.Get().Room.HumiditySensorID, 72)
 		if err != nil {
-			Error(rw, err)
+			Error(sm, rw, req, err)
 			return
 		}
 		graphHumidity[*roomHumSensor] = values
@@ -80,25 +81,25 @@ func Dashboard(wdb weatherdb.WeatherDB) func(rw http.ResponseWriter, req *http.R
 		// collect the window states
 		windows, err := wdb.GetWindowStates()
 		if err != nil {
-			Error(rw, err)
+			Error(sm, rw, req, err)
 			return
 		}
 
 		// collect window value changes
 		windowSensorType, err := wdb.GetSensorTypeByType("window_state")
 		if err != nil {
-			Error(rw, err)
+			Error(sm, rw, req, err)
 			return
 		}
 		windowSensors, err := wdb.GetSensorsByTypeId(windowSensorType.Id)
 		if err != nil {
-			Error(rw, err)
+			Error(sm, rw, req, err)
 			return
 		}
 		for _, sensor := range windowSensors {
 			values, err = wdb.GetSensorValues(sensor.Id, 14)
 			if err != nil {
-				Error(rw, err)
+				Error(sm, rw, req, err)
 				return
 			}
 			graphWindows[*sensor] = values

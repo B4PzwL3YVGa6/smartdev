@@ -28,6 +28,10 @@ type WeatherDB interface {
 	GetSensorValues(int, int) ([]*SensorValue, error)
 	GetHourlyAverages(int, int) ([]*SensorValue, error)
 	GetDailyAverages(int, int) ([]*SensorValue, error)
+	GetUsers() ([]User, error)
+	GetUserById(int) (User, error)
+	GetUserByEmail(string) (User, error)
+	GetSubscriptionsByUserId(int) ([]Subscription, error)
 	InsertSensor(*Sensor) error
 	InsertSensorType(*SensorType) error
 	InsertSensorValue(int, int, time.Time) error
